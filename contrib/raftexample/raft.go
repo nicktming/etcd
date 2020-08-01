@@ -161,7 +161,7 @@ func (rc *raftNode) publishEntries(ents []raftpb.Entry) bool {
 			rc.confState = *rc.node.ApplyConfChange(cc)
 			switch cc.Type {
 			case raftpb.ConfChangeAddNode:
-				if len(cc.Context) > 0 {
+				if len(cc.Context) > 0 && cc.NodeID != uint64(rc.id) {
 					rc.transport.AddPeer(types.ID(cc.NodeID), []string{string(cc.Context)})
 				}
 			case raftpb.ConfChangeRemoveNode:
