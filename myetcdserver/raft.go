@@ -121,6 +121,10 @@ func (r *raftNode) start() {
 
 				log.Printf("From rd: %v\n", rd)
 
+				for _, e := range rd.Entries {
+					log.Printf("got entry from r.Ready(): %v", e.Type)
+				}
+
 				notifyc := make(chan struct{}, 1)
 				ap := apply {
 					entries: 	rd.CommittedEntries,
@@ -129,10 +133,13 @@ func (r *raftNode) start() {
 				}
 			// TODO update commited entries
 
-					select {
-					case r.applyc <- ap:
-					}
+				select {
+				case r.applyc <- ap:
+				}
 			// TODO
+				r.raftStorage.Append(rd.Entries)
+
+				notifyc <- struct{}{}
 				r.Advance()
 			}
 		}

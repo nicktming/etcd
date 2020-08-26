@@ -77,10 +77,16 @@ func (s *EtcdServer) run() {
 	for {
 		select {
 		case ap := <-s.r.apply():
+			log.Printf("ap<-applyc:%v\n", ap)
 			s.applyAll(&ep, &ap)
 		}
 	}
 }
+
+func (s *EtcdServer) applyEntryNormal(e *raftpb.Entry) {
+
+}
+
 
 func (s *EtcdServer) apply(
 es []raftpb.Entry, confState *raftpb.ConfState) (appliedt uint64, appliedi uint64, shouldStop bool) {
@@ -89,7 +95,7 @@ es []raftpb.Entry, confState *raftpb.ConfState) (appliedt uint64, appliedi uint6
 		e := es[i]
 		switch e.Type {
 		case raftpb.EntryNormal:
-			log.Println("got type: raftpb.EntryNormal")
+			log.Printf("got type: raftpb.EntryNormal e.data: %v\n", e.Data)
 		case raftpb.EntryConfChange:
 			log.Println("got type: raftpb.EntryConfChange")
 		default:
@@ -108,8 +114,10 @@ func (s *EtcdServer) applyEntries(ep *etcdProgress, apply *apply) {
 	}
 
 	firsti := apply.entries[0].Index
+	log.Printf("===>applyEntries firsti:%v and ep.applied(%v) + 1\n", firsti, ep.appliedi)
+
 	if firsti > ep.appliedi + 1 {
-		log.Panicf("firsti:%v should be < ep.applied(%v) + 1\n", firsti, ep.appliedi)
+		log.Panicf("===>applyEntries firsti:%v should be < ep.applied(%v) + 1\n", firsti, ep.appliedi)
 	}
 
 	var ents []raftpb.Entry

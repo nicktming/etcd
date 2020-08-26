@@ -80,7 +80,7 @@ func StartEtcd(inCfg *Config) (e *Etcd, err error) {
 
 	// TODO CheckInitialHashKV
 
-	e.Server.Start()
+	go e.Server.Start()
 
 	return e, nil
 }

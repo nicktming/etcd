@@ -95,9 +95,9 @@ func (s *EtcdServer) processInternalRaftRequestOnce(ctx context.Context, r pb.In
 	//}
 
 	id := r.ID
-	if id == 0 {
-		id = r.Header.ID
-	}
+	//if id == 0 {
+	//	id = r.Header.ID
+	//}
 	ch := s.w.Register(id)
 
 	cctx, cancel := context.WithTimeout(ctx, 5 * time.Second)
