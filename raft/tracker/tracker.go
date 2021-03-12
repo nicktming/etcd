@@ -257,6 +257,7 @@ func (p *ProgressTracker) ResetVotes() {
 // instance if v == true (and declined it otherwise).
 func (p *ProgressTracker) RecordVote(id uint64, v bool) {
 	_, ok := p.Votes[id]
+	fmt.Printf("======>ProgressTracker: %v, p.Votes==nil %v\n", ok, p.Votes == nil)
 	if !ok {
 		p.Votes[id] = v
 	}

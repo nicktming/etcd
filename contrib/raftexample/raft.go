@@ -158,7 +158,7 @@ func (rc *raftNode) publishEntries(ents []raftpb.Entry) bool {
 		case raftpb.EntryConfChange:
 			var cc raftpb.ConfChange
 			cc.Unmarshal(ents[i].Data)
-			rc.confState = *rc.node.ApplyConfChange(cc)
+			//rc.confState = *rc.node.ApplyConfChange(cc)
 			switch cc.Type {
 			case raftpb.ConfChangeAddNode:
 				if len(cc.Context) > 0 {
@@ -254,7 +254,7 @@ func (rc *raftNode) writeError(err error) {
 	close(rc.commitC)
 	rc.errorC <- err
 	close(rc.errorC)
-	rc.node.Stop()
+	//rc.node.Stop()
 }
 
 func (rc *raftNode) startRaft() {
@@ -284,7 +284,8 @@ func (rc *raftNode) startRaft() {
 	}
 
 	if oldwal {
-		rc.node = raft.RestartNode(c)
+		panic("old wal")
+		//rc.node = raft.RestartNode(c)
 	} else {
 		startPeers := rpeers
 		if rc.join {
@@ -319,7 +320,7 @@ func (rc *raftNode) stop() {
 	rc.stopHTTP()
 	close(rc.commitC)
 	close(rc.errorC)
-	rc.node.Stop()
+	//rc.node.Stop()
 }
 
 func (rc *raftNode) stopHTTP() {
@@ -329,9 +330,9 @@ func (rc *raftNode) stopHTTP() {
 }
 
 func (rc *raftNode) publishSnapshot(snapshotToSave raftpb.Snapshot) {
-	if raft.IsEmptySnap(snapshotToSave) {
-		return
-	}
+	//if raft.IsEmptySnap(snapshotToSave) {
+	//	return
+	//}
 
 	log.Printf("publishing snapshot at index %d", rc.snapshotIndex)
 	defer log.Printf("finished publishing snapshot at index %d", rc.snapshotIndex)
@@ -399,6 +400,7 @@ func (rc *raftNode) serveChannels() {
 		for rc.proposeC != nil && rc.confChangeC != nil {
 			select {
 			case prop, ok := <-rc.proposeC:
+			//case _, ok := <-rc.proposeC:
 				if !ok {
 					rc.proposeC = nil
 				} else {
@@ -412,7 +414,7 @@ func (rc *raftNode) serveChannels() {
 				} else {
 					confChangeCount++
 					cc.ID = confChangeCount
-					rc.node.ProposeConfChange(context.TODO(), cc)
+					//rc.node.ProposeConfChange(context.TODO(), cc)
 				}
 			}
 		}
@@ -428,19 +430,21 @@ func (rc *raftNode) serveChannels() {
 
 		// store raft entries to wal, then publish over commit channel
 		case rd := <-rc.node.Ready():
-			rc.wal.Save(rd.HardState, rd.Entries)
-			if !raft.IsEmptySnap(rd.Snapshot) {
-				rc.saveSnap(rd.Snapshot)
-				rc.raftStorage.ApplySnapshot(rd.Snapshot)
-				rc.publishSnapshot(rd.Snapshot)
-			}
+
+			fmt.Printf("raftexample got rd: %v\n", rd)
+			//rc.wal.Save(rd.HardState, rd.Entries)
+			//if !raft.IsEmptySnap(rd.Snapshot) {
+			//	rc.saveSnap(rd.Snapshot)
+			//	rc.raftStorage.ApplySnapshot(rd.Snapshot)
+			//	rc.publishSnapshot(rd.Snapshot)
+			//}
 			rc.raftStorage.Append(rd.Entries)
-			rc.transport.Send(rd.Messages)
+			//rc.transport.Send(rd.Messages)
 			if ok := rc.publishEntries(rc.entriesToApply(rd.CommittedEntries)); !ok {
 				rc.stop()
 				return
 			}
-			rc.maybeTriggerSnapshot()
+			//rc.maybeTriggerSnapshot()
 			rc.node.Advance()
 
 		case err := <-rc.transport.ErrorC:
@@ -475,7 +479,8 @@ func (rc *raftNode) serveRaft() {
 }
 
 func (rc *raftNode) Process(ctx context.Context, m raftpb.Message) error {
-	return rc.node.Step(ctx, m)
+	//return rc.node.Step(ctx, m)
+	return nil
 }
 func (rc *raftNode) IsIDRemoved(id uint64) bool                           { return false }
 func (rc *raftNode) ReportUnreachable(id uint64)                          {}

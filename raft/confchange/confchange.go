@@ -251,7 +251,13 @@ func (c Changer) remove(cfg *tracker.Config, prs tracker.ProgressMap, id uint64)
 
 // initProgress initializes a new progress for the given node or learner.
 func (c Changer) initProgress(cfg *tracker.Config, prs tracker.ProgressMap, id uint64, isLearner bool) {
+	fmt.Printf("======>cfg.Voters: %v, id: %v\n", cfg.Voters, id)
 	if !isLearner {
+		// TODO
+		fmt.Printf("should add '%v' to cfg.Voters\n", id)
+		if incoming(cfg.Voters) == nil {
+			cfg.Voters[0] = make(quorum.MajorityConfig)
+		}
 		incoming(cfg.Voters)[id] = struct{}{}
 	} else {
 		nilAwareAdd(&cfg.Learners, id)
